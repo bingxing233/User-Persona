@@ -559,8 +559,9 @@ def show_clustering_analysis(df_clustered):
     except FileNotFoundError:
         st.info("聚类评估图表未找到，请运行 ml_modeling.py 脚本生成图表")
     
-    # 聚类数量选择
-    n_clusters = st.slider("选择聚类数量", 2, 10, optimal_k)
+    # 直接使用最佳聚类数，不再提供滑块选择
+    n_clusters = optimal_k
+    st.info(f"使用系统自动选择的最佳聚类数: {n_clusters}")
     
     # 显示聚类结果
     st.subheader(f"聚类结果 (k={n_clusters})")
@@ -605,6 +606,79 @@ def show_clustering_analysis(df_clustered):
         'Previous Purchases': 'mean'
     }).round(2)
     st.dataframe(cluster_stats)
+    
+    # 聚类群体特征分析
+    st.subheader("聚类群体特征分析")
+    
+    # 每个聚类的详细特征分析
+    for cluster_id in sorted(df_clustered['Cluster'].unique()):
+        cluster_data = df_clustered[df_clustered['Cluster'] == cluster_id]
+        st.markdown(f"#### 聚类 {cluster_id} 特征分析")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("平均年龄", f"{cluster_data['Age'].mean():.1f}岁")
+        with col2:
+            st.metric("平均购买金额", f"${cluster_data['Purchase Amount (USD)'].mean():.2f}")
+        with col3:
+            st.metric("平均评分", f"{cluster_data['Review Rating'].mean():.2f}")
+        with col4:
+            st.metric("平均以往购买次数", f"{cluster_data['Previous Purchases'].mean():.1f}")
+        
+        # 性别分布
+        gender_dist = cluster_data['Gender'].value_counts()
+        if len(gender_dist) > 0:
+            st.markdown("**性别分布:**")
+            st.write(gender_dist)
+        
+        # 地区分布 (Top 5)
+        location_dist = cluster_data['Location'].value_counts().head(5)
+        if len(location_dist) > 0:
+            st.markdown("**地区分布 (Top 5):**")
+            st.write(location_dist)
+        
+        # 商品类别偏好 (Top 5)
+        category_dist = cluster_data['Category'].value_counts().head(5)
+        if len(category_dist) > 0:
+            st.markdown("**商品类别偏好 (Top 5):**")
+            st.write(category_dist)
+        
+        st.markdown("---")
+    
+    # t-SNE用户画像可视化
+    st.subheader("t-SNE用户画像可视化")
+    st.markdown("""
+    t-SNE (t-Distributed Stochastic Neighbor Embedding) 是一种降维可视化技术，
+    能够将高维数据映射到二维空间中，帮助我们更好地理解聚类结果和用户群体分布。
+    """)
+    
+    try:
+        from sklearn.manifold import TSNE
+        
+        # 选择用于t-SNE的特征
+        features_for_tsne = ['Age', 'Purchase Amount (USD)', 'Review Rating', 'Previous Purchases']
+        
+        X_tsne = df_clustered[features_for_tsne]
+        
+        # 处理缺失值
+        X_tsne = X_tsne.fillna(X_tsne.mean())
+        
+        # 应用t-SNE降维
+        tsne = TSNE(n_components=2, random_state=42, perplexity=min(30, len(X_tsne)//3))
+        X_tsne_reduced = tsne.fit_transform(X_tsne)
+        
+        # 可视化
+        fig, ax = plt.subplots(figsize=(12, 8))
+        scatter = ax.scatter(X_tsne_reduced[:, 0], X_tsne_reduced[:, 1], 
+                           c=df_clustered['Cluster'], cmap='tab10', alpha=0.7)
+        ax.set_xlabel('t-SNE Component 1')
+        ax.set_ylabel('t-SNE Component 2')
+        ax.set_title('t-SNE Visualization of Customer Clusters')
+        plt.colorbar(scatter)
+        st.pyplot(fig)
+        
+    except Exception as e:
+        st.error(f"t-SNE可视化过程中出现错误: {str(e)}")
     
     # 添加聚类分析说明
     st.markdown("""
