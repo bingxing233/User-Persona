@@ -555,7 +555,7 @@ def show_clustering_analysis(df_clustered):
     # 加载聚类评估图表
     try:
         # 显示聚类评估图表
-        st.image('clustering_evaluation.png', caption='聚类评估指标', use_column_width=True)
+        st.image('clustering_evaluation.png', caption='聚类评估指标', width='stretch')
     except FileNotFoundError:
         st.info("聚类评估图表未找到，请运行 ml_modeling.py 脚本生成图表")
     
@@ -703,8 +703,8 @@ def show_classification_prediction(df):
             
             # 显示SHAP特征重要性图
             try:
-                st.image('shap_summary.png', caption='SHAP特征重要性', use_column_width=True)
-                st.image('shap_beeswarm.png', caption='SHAP蜜蜂图', use_column_width=True)
+                st.image('shap_summary.png', caption='SHAP特征重要性', width='stretch')
+                st.image('shap_beeswarm.png', caption='SHAP蜜蜂图', width='stretch')
             except FileNotFoundError:
                 st.info("SHAP可视化图表未找到，请运行 ml_modeling.py 脚本生成图表")
                 

@@ -374,7 +374,8 @@ def explain_model_with_shap(model, X_train, X_test, model_name):
             shap.plots.beeswarm(shap_values[:, :, 1], show=False)  # 选择第二类(Yes类)
         else:
             shap.plots.beeswarm(shap_values, show=False)
-        plt.title(f'SHAP Beeswarm Plot - {model_name}')
+        plt.text(0.02, 0.98, f'SHAP Beeswarm Plot - {model_name}', transform=plt.gca().transAxes, 
+                 verticalalignment='top', fontsize=12, fontweight='bold')
         plt.tight_layout()
         plt.savefig('shap_beeswarm.png', dpi=300, bbox_inches='tight')
         plt.show()
@@ -382,7 +383,8 @@ def explain_model_with_shap(model, X_train, X_test, model_name):
         # 添加SHAP特征重要性排序
         plt.figure(figsize=(10, 6))
         shap.summary_plot(shap_values, X_test[:50], plot_type="bar", show=False)
-        plt.title(f'SHAP Feature Importance - {model_name}')
+        plt.text(0.02, 0.95, f'SHAP Feature Importance - {model_name}', transform=plt.gca().transAxes, 
+                 verticalalignment='top', fontsize=12, fontweight='bold')
         plt.tight_layout()
         plt.savefig('shap_summary.png', dpi=300, bbox_inches='tight')
         plt.show()
